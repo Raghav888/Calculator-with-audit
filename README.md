@@ -124,4 +124,4 @@ The application automatically logs these event types:
 2. Connect your repository to Netlify
 
 
-![](https://github.com/Raghav888/Calulator-with-audit/blob/main/public/ScreenRecording2025-08-15at8.59.35AM-ezgif.com-video-to-gif-converter.mov)
+![](https://github.com/Raghav888/Calulator-with-audit/blob/main/public/ScreenRecording2025-08-15at8.59.35AM-ezgif.com-video-to-gif-converter.gif)
