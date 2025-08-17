@@ -10,6 +10,7 @@ A modern React-based calculator application with comprehensive audit logging cap
 - **Modern UI**: Beautiful gradient design with smooth animations
 - **Responsive Design**: Works seamlessly on desktop
 - **Real-time Display**: Clear input display with proper formatting
+- **Backend**: Nodejs Express
 
 ### Audit Logging
 
@@ -27,7 +28,7 @@ A modern React-based calculator application with comprehensive audit logging cap
 
 - **Frontend**: React 18 with TypeScript
 - **Styling**: CSS3 with modern gradients and animations
-- **Backend**: Firebase Firestore (NoSQL database)
+- **Backend**: Nodejs- Express and Firebase Firestore (NoSQL database)
 - **Deployment**: Ready for Netlify
 
 ## Setup Instructions
@@ -36,15 +37,8 @@ A modern React-based calculator application with comprehensive audit logging cap
 
 - Node.js (v16 or higher)
 - npm or yarn
+- Nodejs Express BE
 - Firebase account
-
-### 2. Firebase Setup
-
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project
-3. Enable Firestore Database
-4. Go to Project Settings > General
-5. Copy your Firebase config
 
 ### 3. Configuration
 
