@@ -1,97 +1,78 @@
-import { logEvent, listenToAuditLogs } from '../services/auditService';
-import { addDoc, onSnapshot } from 'firebase/firestore';
+import { logEvent, fetchAuditHistory, AuditEvent } from "../services/auditService";
 
-jest.mock('firebase/firestore', () => ({
-  addDoc: jest.fn().mockResolvedValue({ id: 'mock-doc-id' }),
-  collection: jest.fn(),
-  getDocs: jest.fn(),
-  query: jest.fn(),
-  orderBy: jest.fn(),
-  onSnapshot: jest.fn(),
-}));
+global.fetch = jest.fn();
 
-jest.mock('../firebase', () => ({
-  db: {}
-}));
-
-describe('auditService', () => {
+describe("Audit Service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('logs events with correct structure', async () => {
-    const action = 'numberEntered';
-    const value = '5';
-    
-    const id = await logEvent(action, value);
-    
-    expect(id).toBe('mock-doc-id');
-    expect(addDoc).toHaveBeenCalled();
-    const callArgs = (addDoc as jest.Mock).mock.calls[0][1];
-    expect(callArgs).toMatchObject({
-      action,
-      value,
-      timestamp: expect.any(Number)
+  describe("logEvent", () => {
+    it("should call fetch with correct parameters", async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+      });
+
+      const action = "TEST_ACTION";
+      const value = "some value";
+
+      await logEvent(action, value);
+
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith(
+        "https://calculator-app-be.onrender.com/audit",
+        expect.objectContaining({
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: expect.stringContaining(action),
+        })
+      );
+    });
+
+    it("should handle fetch error gracefully", async () => {
+      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      (fetch as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
+
+      await logEvent("ACTION", "VALUE");
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Error logging audit event:",
+        expect.any(Error)
+      );
+
+      consoleSpy.mockRestore();
     });
   });
 
-  it('returns document id on successful log', async () => {
-    const result = await logEvent('test', 'value');
-    expect(result).toBe('mock-doc-id');
-  });
+  describe("fetchAuditHistory", () => {
+    it("should fetch and return audit events", async () => {
+      const mockEvents: AuditEvent[] = [
+        { id: "1", timestamp: 123, action: "ACTION_1", value: "val1" },
+        { id: "2", timestamp: 124, action: "ACTION_2" },
+      ];
 
-  it('throws error when Firebase fails', async () => {
-    (addDoc as jest.Mock).mockRejectedValue(new Error('Firebase error'));
-    
-    await expect(logEvent('test', 'value')).rejects.toThrow('Firebase error');
-  });
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ events: mockEvents }),
+      });
 
-describe("listenToAuditLogs", () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it("calls onUpdate with parsed logs from snapshot", () => {
-    const mockSnapshot = {
-      forEach: (callback: any) => {
-        callback({ id: "1", data: () => ({  id: "1", timestamp: 1000, action: "entered" }) });
-        callback({ id: "2", data: () => ({ id: "2", timestamp: 2000, action: "clear" }) });
-      },
-    };
-
-    const unsubscribeMock = jest.fn();
-    (onSnapshot as unknown as jest.Mock).mockImplementation((_q, onNext) => {
-      onNext(mockSnapshot);
-      return unsubscribeMock;
+      const result = await fetchAuditHistory();
+      expect(result).toEqual(mockEvents);
+      expect(fetch).toHaveBeenCalledWith(
+        "https://calculator-app-be.onrender.com/audit/history",
+        expect.objectContaining({ method: "GET" })
+      );
     });
 
-    const onUpdate = jest.fn();
-    const onError = jest.fn();
+    it("should throw error if fetch fails", async () => {
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        statusText: "Server Error",
+      });
 
-    const unsubscribe = listenToAuditLogs(onUpdate, onError);
-
-    expect(onUpdate).toHaveBeenCalledWith([
-      { id: "1", timestamp: 1000, action: "entered" },
-      { id: "2", timestamp: 2000, action: "clear" },
-    ]);
-    expect(unsubscribe).toBe(unsubscribeMock);
-  });
-
-  it("calls onError when snapshot fails", () => {
-    const error = new Error("Firestore error");
-
-    const unsubscribeMock = jest.fn();
-    (onSnapshot as unknown as jest.Mock).mockImplementation((_q, _onNext, onErr) => {
-      onErr(error);
-      return unsubscribeMock;
+      await expect(fetchAuditHistory()).rejects.toThrow(
+        "Failed to fetch audit history: Server Error"
+      );
     });
-
-    const onUpdate = jest.fn();
-    const onError = jest.fn();
-
-    listenToAuditLogs(onUpdate, onError);
-
-    expect(onError).toHaveBeenCalledWith(error);
   });
-});
 });

@@ -1,27 +1,28 @@
 import React, { useState, useEffect } from "react";
-import { listenToAuditLogs, AuditEvent } from "../services/auditService";
+import { AuditEvent, fetchAuditHistory } from "../services/auditService";
 import "../css/AuditLogs.css";
 
 const AuditLogs: React.FC = () => {
   const [logs, setLogs] = useState<AuditEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  const loadHistory = async () => {
+    try {
+      const history = await fetchAuditHistory();
+      setLogs(history);
+      setError(null);
+    } catch (error: any) {
+      setError("Failed to load audit history: " + error.message);
+    }
+  };
   useEffect(() => {
-    const unsubscribe = listenToAuditLogs(
-      (newLogs) => {
-        setLogs(newLogs);
-        setError(null);
-      },
-      (err) => {
-        setError("Failed to load audit logs: " + err.message);
-      }
-    );
-
-    return () => unsubscribe();
+    loadHistory();
   }, []);
 
-  const formatTimestamp = (timestamp: number) =>
-    new Date(timestamp).toLocaleString();
+  const formatTimestamp = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return isNaN(date.getTime()) ? "Invalid date" : date.toLocaleString();
+  };
 
   return (
     <div className="audit-logs">
@@ -32,7 +33,9 @@ const AuditLogs: React.FC = () => {
       {!error && logs.length === 0 && (
         <div className="no-data">No audit logs available</div>
       )}
-
+      <button className="show-logs-button" onClick={() => loadHistory()}>
+        Refresh
+      </button>
       <div className="logs-container">
         {logs.map((log) => (
           <div key={log.id} className="log-entry">

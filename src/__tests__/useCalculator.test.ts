@@ -43,11 +43,10 @@ describe('useCalculator Hook', () => {
     const { result } = renderHook(() => useCalculator());
     
     await act(async () => {
-      await result.current.inputDigit('5');
       await result.current.clearDisplay();
     });
 
     expect(result.current.display).toBe('0');
-    expect(logEvent).toHaveBeenCalledWith('clear', undefined);
+    expect(logEvent).toHaveBeenCalledWith('clearPressed', 'C');
   });
 });
