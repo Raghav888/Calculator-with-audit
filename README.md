@@ -40,29 +40,15 @@ A modern React-based calculator application with comprehensive audit logging cap
 - Nodejs Express BE
 - Firebase account
 
-### 3. Configuration
 
-1. Open `src/firebase.ts`
-2. Replace the placeholder values with your Firebase config:
-
-```typescript
-const firebaseConfig = {
-  apiKey: "your-actual-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "your-sender-id",
-  appId: "your-app-id",
-};
-```
-
-### 4. Install Dependencies
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
+- BE Repo: https://github.com/Raghav888/Calculator-app-BE
 
-### 5. Start Development Server
+### 3. Start Development Server
 
 ```bash
 npm run dev
@@ -70,7 +56,7 @@ npm run dev
 
 The application will open at `http://localhost:3000`
 
-### 6. Running Tests
+### 4. Running Tests
 
 ```bash
 npm test           # Run all tests
