@@ -12,7 +12,7 @@ const generateUniqueId = (): string => {
   return `${timestamp}-${random}`;
 };
 
-export async function logEvent(action: string,value: string) {
+export async function logEvent(action: string,value : any) {
   try {
     const res = await fetch(`${BASE_URL}/audit`, {
       method: "POST",
